@@ -8,10 +8,14 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db_session, get_redis_client, get_settings_dep
+from app.core.logging import get_logger
 from app.core.config import Settings
 from app.models.image_job import JobStatus
 from app.schemas.image_job import (
     ImageJobCreate,
+    ImageJobBatchCreate,
+    ImageJobBatchError,
+    ImageJobBatchResponse,
     ImageJobListResponse,
     ImageJobRead,
 )
@@ -24,6 +28,7 @@ from app.services.jobs import (
 )
 
 router = APIRouter(prefix="/images", tags=["images"])
+logger = get_logger("thumbforge.api.images")
 
 
 @router.post("", status_code=status.HTTP_202_ACCEPTED, response_model=ImageJobRead)
@@ -43,6 +48,39 @@ async def submit_image_job(
             detail={"message": "Job already active", "job_id": str(exc.job.id)},
         ) from exc
     return ImageJobRead.model_validate(job)
+
+
+@router.post(
+    "/batch", status_code=status.HTTP_202_ACCEPTED, response_model=ImageJobBatchResponse
+)
+async def submit_batch_image_jobs(
+    payload: ImageJobBatchCreate,
+    session: AsyncSession = Depends(get_db_session),
+    redis: Redis = Depends(get_redis_client),
+    settings: Settings = Depends(get_settings_dep),
+) -> ImageJobBatchResponse:
+    accepted: list[ImageJobRead] = []
+    duplicates: list[ImageJobRead] = []
+    failed: list[ImageJobBatchError] = []
+
+    for url in payload.urls:
+        try:
+            job = await create_job(
+                session=session, redis=redis, settings=settings, url=str(url)
+            )
+        except DuplicateJobError as exc:
+            duplicates.append(ImageJobRead.model_validate(exc.job))
+            continue
+        except Exception as exc:  # pragma: no cover - defensive logging
+            logger.exception("api.batch_submit_failed", url=str(url), error=str(exc))
+            failed.append(ImageJobBatchError(url=url, detail=str(exc), job_id=None))
+            continue
+
+        accepted.append(ImageJobRead.model_validate(job))
+
+    return ImageJobBatchResponse(
+        accepted=accepted, duplicates=duplicates, failed=failed
+    )
 
 
 @router.get("", response_model=ImageJobListResponse)

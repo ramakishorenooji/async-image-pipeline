@@ -22,6 +22,7 @@ ThumbForge is an async image processing pipeline built with FastAPI. Clients sub
 | Method | Path                         | Description                                                                    |
 | ------ | ---------------------------- | ------------------------------------------------------------------------------ |
 | `POST` | `/images`                    | Submit an image URL for processing. Returns `202 Accepted` and the job record. |
+| `POST` | `/images/batch`              | Submit a list of image URLs; returns accepted, duplicate, and failed entries.  |
 | `GET`  | `/images`                    | List jobs with pagination and optional filters (status, created_at range).     |
 | `GET`  | `/images/{job_id}`           | Retrieve a single job by ID.                                                   |
 | `GET`  | `/images/{job_id}/thumbnail` | Download the generated thumbnail once available.                               |
@@ -36,6 +37,13 @@ docker compose up --build
 
 # Initialize database schema if needed
 docker compose exec api python -m scripts.init_db
+
+# Submit a batch of URLs (example)
+Invoke-WebRequest `
+  -Method POST `
+  -Uri http://localhost:8000/v1/images/batch `
+  -ContentType "application/json" `
+  -InFile .\sample_image_urls.json
 ```
 
 Once running:

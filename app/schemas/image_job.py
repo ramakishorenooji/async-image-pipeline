@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from pydantic import AnyHttpUrl, BaseModel, ConfigDict
+from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field
 
 from app.models.image_job import JobStatus
 from app.schemas.pagination import Pagination
@@ -10,6 +10,10 @@ from app.schemas.pagination import Pagination
 
 class ImageJobCreate(BaseModel):
     url: AnyHttpUrl
+
+
+class ImageJobBatchCreate(BaseModel):
+    urls: list[AnyHttpUrl] = Field(min_length=1)
 
 
 class ImageJobRead(BaseModel):
@@ -28,6 +32,18 @@ class ImageJobRead(BaseModel):
 class ImageJobListResponse(BaseModel):
     items: list[ImageJobRead]
     pagination: Pagination
+
+
+class ImageJobBatchError(BaseModel):
+    url: AnyHttpUrl
+    detail: str
+    job_id: UUID | None = None
+
+
+class ImageJobBatchResponse(BaseModel):
+    accepted: list[ImageJobRead]
+    duplicates: list[ImageJobRead]
+    failed: list[ImageJobBatchError]
 
 
 class ImageJobMetrics(BaseModel):
