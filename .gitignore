@@ -1,0 +1,61 @@
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.eggs/
+.build/
+.dist/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.pyre/
+.pytype/
+Pipfile.lock
+
+# environments
+.venv/
+env/
+venv/
+ENV/
+
+# tooling
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# project artifacts
+storage/thumbnails/
+logs/
+```# filepath: .gitignore
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.eggs/
+.build/
+.dist/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.pyre/
+.pytype/
+Pipfile.lock
+
+# environments
+.venv/
+env/
+venv/
+ENV/
+
+# tooling
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# project artifacts
+storage/thumbnails/
+logs/
