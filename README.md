@@ -1,4 +1,4 @@
-# ThumbForge
+# ThumbForge!!
 
 ThumbForge is an async image processing pipeline built with FastAPI. Clients submit image URLs; the service queues the work, resizes the image into a thumbnail, extracts metadata, stores the results, and exposes APIs to monitor and retrieve processed jobs.
 
